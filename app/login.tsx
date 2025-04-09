@@ -13,6 +13,12 @@ import {
 } from 'react-native';
 import { registerUser, loginUser } from '../firebase/authService';
 import { router } from 'expo-router';
+import { getUserRole } from '../firebase/authService'; 
+import { auth } from '../firebase/firebaseConfig'; 
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
+
+
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -22,12 +28,45 @@ export default function LoginScreen() {
   const handleAuth = async () => {
     try {
       if (isRegister) {
-        await registerUser(email, password);
-        Alert.alert('✅ Registro exitoso');
-      } else {
+        const userCredential = await registerUser(email, password);
+        const uid = userCredential.user.uid;
+      
+        const userRef = doc(db, 'users', uid);
+        await setDoc(userRef, {
+          email,
+          role: 'cliente', // 👈 Por ahora asignamos siempre "cliente"
+        });
+      
+        Alert.alert('✅ Registro exitoso como cliente');
+      }
+       else {
         await loginUser(email, password);
-        Alert.alert('✅ Login exitoso');
-        router.replace('/welcome');
+        const uid = auth.currentUser?.uid;
+  
+        if (!uid) {
+          Alert.alert('Error', 'No se pudo obtener el UID del usuario');
+          return;
+        }
+  
+        const role = await getUserRole(uid);
+  
+        if (!role) {
+          Alert.alert('❌ Error', 'No se encontró el rol del usuario');
+          return;
+        }
+  
+        Alert.alert('✅ Login exitoso', `Rol: ${role}`);
+  
+        // Redirección por rol
+        if (role === 'cliente') {
+          router.replace('/cliente');
+        } else if (role === 'chef') {
+          router.replace('/chef');
+        } else if (role === 'cajero') {
+          router.replace('/cajero');
+        } else {
+          Alert.alert('❌ Rol desconocido', `Rol recibido: ${role}`);
+        }
       }
     } catch (error: any) {
       Alert.alert('❌ Error', error.message);
