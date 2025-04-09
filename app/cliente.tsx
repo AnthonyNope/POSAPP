@@ -1,12 +1,8 @@
-// app/cliente.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
-import { TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
-
-
 
 interface Product {
   id: string;
@@ -19,12 +15,10 @@ export default function ClienteScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<Product[]>([]);
 
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const productsCol = collection(db, 'products');
-        const snapshot = await getDocs(productsCol);
+        const snapshot = await getDocs(collection(db, 'products'));
         const items = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -39,77 +33,60 @@ export default function ClienteScreen() {
     fetchProducts();
   }, []);
 
+  const addToCart = (product: Product) => {
+    setCart((prev) => [...prev, product]);
+  };
+
   const renderItem = ({ item }: { item: Product }) => (
     <View style={styles.productCard}>
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.description}>{item.description}</Text>
       <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+
       <TouchableOpacity style={styles.addButton} onPress={() => addToCart(item)}>
         <Text style={styles.addButtonText}>Agregar al carrito</Text>
       </TouchableOpacity>
     </View>
   );
-  
-  const addToCart = (product: Product) => {
-    setCart((prevCart) => [...prevCart, product]);
-  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>🛒 Menú</Text>
-  
+
       <FlatList
         data={products}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 100 }} // extra espacio para la barra del carrito
+        contentContainerStyle={{ paddingBottom: 100 }}
       />
-  
+
       {cart.length > 0 && (
         <View style={styles.cartBar}>
-          <Text style={styles.cartText}>
-            🛒 {cart.length} producto(s) en el carrito
-          </Text>
+          <Text style={styles.cartText}>🛒 {cart.length} producto(s) en el carrito</Text>
+
           <TouchableOpacity
-            onPress={() => {
+            onPress={() =>
               router.push({
                 pathname: '/carrito',
-                params: {
-                  cart: JSON.stringify(cart),
-                },
-              });
-            }}
+                params: { cart: JSON.stringify(cart) },
+              })
+            }
           >
             <Text style={styles.viewCartButton}>Ver pedido</Text>
           </TouchableOpacity>
         </View>
       )}
-  
-      {/* 👇 Este botón siempre visible, fuera del carrito */}
-      <TouchableOpacity
-  onPress={() => router.push('/estado')}
-  style={[
-    styles.addButton,
-    {
-      marginTop: 20,
-      backgroundColor: '#32CD32',
-      marginBottom: 40, // 👈 esto evita que se pegue abajo y tape cosas
-    },
-  ]}
->
-  <Text style={styles.addButtonText}>Ver estado del pedido</Text>
-</TouchableOpacity>
 
+      {/* Botón siempre visible */}
+      <TouchableOpacity
+        onPress={() => router.push('/estado')}
+        style={[styles.addButton, styles.statusButton]}
+      >
+        <Text style={styles.addButtonText}>Ver estado del pedido</Text>
+      </TouchableOpacity>
     </View>
   );
-  
-  
-
-  
-  
 }
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -129,8 +106,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
     marginBottom: 12,
-    borderColor: '#ddd',
     borderWidth: 1,
+    borderColor: '#ddd',
   },
   name: {
     fontSize: 18,
@@ -145,7 +122,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 6,
   },
-
   addButton: {
     marginTop: 10,
     backgroundColor: '#ff7f50',
@@ -177,6 +153,9 @@ const styles = StyleSheet.create({
     color: '#ff7f50',
     fontWeight: '700',
   },
-  
-  
+  statusButton: {
+    backgroundColor: '#32CD32',
+    marginTop: 20,
+    marginBottom: 40,
+  },
 });
