@@ -3,10 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react
 import { useLocalSearchParams, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase/firebaseConfig';
-import { auth } from '../firebase/firebaseConfig';
-
-
+import { db, auth } from '../firebase/firebaseConfig';
 
 interface Product {
   id: string;
@@ -20,27 +17,35 @@ export default function CarritoScreen() {
   const [cart, setCart] = useState<Product[]>([]);
 
   useEffect(() => {
-    // Recuperar el carrito desde los parámetros de navegación
     if (params.cart) {
-      const parsedCart = JSON.parse(params.cart as string);
-      setCart(parsedCart);
+      try {
+        const parsedCart = JSON.parse(params.cart as string);
+        setCart(parsedCart);
+      } catch (e) {
+        console.error('Error parsing cart:', e);
+      }
     }
   }, []);
 
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   const handleEnviarPedido = async () => {
+    if (cart.length === 0) {
+      Alert.alert('❌ Carrito vacío', 'Agrega productos antes de enviar tu pedido.');
+      return;
+    }
+
     try {
       const uid = auth.currentUser?.uid;
       if (!uid) return;
-  
+
       await addDoc(collection(db, 'orders'), {
         items: cart,
         status: 'Ordered',
         createdAt: serverTimestamp(),
-        userId: uid, // 👈 esto es lo nuevo
+        userId: uid,
       });
-  
+
       Alert.alert('✅ Pedido enviado a la cocina');
       router.replace('/cliente');
     } catch (error) {
@@ -58,23 +63,33 @@ export default function CarritoScreen() {
 
   return (
     <View style={styles.container}>
-        <TouchableOpacity onPress={() => router.back()}>
-  <Text style={styles.backButton}>← Volver</Text>
-</TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}>
+        <Text style={styles.backButton}>← Volver al menú</Text>
+      </TouchableOpacity>
 
       <Text style={styles.title}>🧾 Tu pedido</Text>
 
       <FlatList
         data={cart}
-        keyExtractor={(item) => item.id + Math.random()}
+        keyExtractor={(item) => `${item.id}-${Date.now()}`}
         renderItem={renderItem}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={{ paddingBottom: 20 }}
       />
 
       <Text style={styles.total}>Total: ${total.toFixed(2)}</Text>
 
-      <TouchableOpacity style={styles.sendButton} onPress={handleEnviarPedido}>
-        <Text style={styles.sendButtonText}>Enviar pedido</Text>
+      <TouchableOpacity
+        style={[
+          styles.sendButton,
+          cart.length === 0 && { backgroundColor: '#ccc' },
+        ]}
+        onPress={handleEnviarPedido}
+        disabled={cart.length === 0}
+      >
+        <Text style={styles.sendButtonText}>
+          {cart.length > 0 ? 'Enviar pedido' : 'Agrega productos'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -87,23 +102,23 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 40,
   },
-
   backButton: {
     color: '#ff7f50',
     fontWeight: 'bold',
     fontSize: 16,
     marginBottom: 10,
   },
-  
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
   },
   item: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
     paddingVertical: 12,
+  },
+  separator: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
   name: {
     fontSize: 16,
