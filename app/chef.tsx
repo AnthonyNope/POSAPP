@@ -48,15 +48,25 @@ export default function ChefScreen() {
       {item.items.map((product, index) => (
         <Text key={index} style={styles.itemText}>• {product.name}</Text>
       ))}
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => updateOrderStatus(item.id, 'Cooking')}
-      >
-        <Text style={styles.buttonText}>Marcar como "Cooking"</Text>
-      </TouchableOpacity>
+  
+      <View style={{ marginTop: 10 }}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => updateOrderStatus(item.id, 'Cooking')}
+        >
+          <Text style={styles.buttonText}>Marcar como "Cooking"</Text>
+        </TouchableOpacity>
+  
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#32CD32' }]}
+          onPress={() => updateOrderStatus(item.id, 'Ready for Pickup')}
+        >
+          <Text style={styles.buttonText}>Marcar como "Listo para recoger"</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
+  
 
   return (
     <View style={styles.container}>
