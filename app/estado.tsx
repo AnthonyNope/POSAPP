@@ -1,11 +1,15 @@
 // app/estado.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  onSnapshot,
+} from 'firebase/firestore';
 import { db, auth } from '../firebase/firebaseConfig';
-import { router } from 'expo-router';
-
-
 
 interface Order {
   id: string;
@@ -18,32 +22,29 @@ export default function EstadoScreen() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchLatestOrder = async () => {
-    try {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
 
-      const q = query(
-        collection(db, 'orders'),
-        where('userId', '==', uid), // <-- esto lo vamos a guardar en el próximo paso
-        orderBy('createdAt', 'desc'),
-        limit(1)
-      );
+    const q = query(
+      collection(db, 'orders'),
+      where('userId', '==', uid),
+      orderBy('createdAt', 'desc'),
+      limit(1)
+    );
 
-      const snapshot = await getDocs(q);
+    const unsubscribe = onSnapshot(q, (snapshot) => {
       if (!snapshot.empty) {
         const doc = snapshot.docs[0];
         setOrder({ id: doc.id, ...doc.data() } as Order);
+      } else {
+        setOrder(null);
       }
 
       setLoading(false);
-    } catch (error) {
-      console.error('Error al obtener pedido:', error);
-    }
-  };
+    });
 
-  useEffect(() => {
-    fetchLatestOrder();
+    return () => unsubscribe(); // limpiamos el listener al desmontar
   }, []);
 
   if (loading) {
@@ -64,11 +65,6 @@ export default function EstadoScreen() {
 
   return (
     <View style={styles.container}>
-
-      <TouchableOpacity onPress={() => router.back()}>
-        <Text style={styles.backButton}>← Volver</Text>
-      </TouchableOpacity>
-      
       <Text style={styles.title}>📦 Estado del pedido</Text>
       <Text style={styles.status}>Estado: {order.status}</Text>
 
@@ -104,13 +100,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 4,
   },
-  backButton: {
-    color: '#ff7f50',
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  
   centered: {
     flex: 1,
     justifyContent: 'center',
