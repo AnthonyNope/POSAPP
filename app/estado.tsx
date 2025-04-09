@@ -1,6 +1,13 @@
 // app/estado.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
 import {
   collection,
   query,
@@ -44,7 +51,7 @@ export default function EstadoScreen() {
       setLoading(false);
     });
 
-    return () => unsubscribe(); // limpiamos el listener al desmontar
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
@@ -58,24 +65,34 @@ export default function EstadoScreen() {
   if (!order) {
     return (
       <View style={styles.centered}>
-        <Text>No tienes pedidos activos</Text>
+        <Image
+          source={{
+            uri: 'https://cdn-icons-png.flaticon.com/512/10437/10437301.png',
+          }}
+          style={styles.emptyImage}
+        />
+        <Text style={styles.emptyText}>No tienes pedidos activos</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>📦 Estado del pedido</Text>
-      <Text style={styles.status}>Estado: {order.status}</Text>
+      <Text style={styles.header}>📦 Estado del Pedido</Text>
 
-      <FlatList
-        data={order.items}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => (
-          <Text style={styles.item}>• {item.name}</Text>
-        )}
-        contentContainerStyle={{ marginTop: 20 }}
-      />
+      <View style={styles.card}>
+        <Text style={styles.statusText}>🟠 Estado: <Text style={styles.statusValue}>{order.status}</Text></Text>
+
+        <Text style={styles.itemsTitle}>📝 Detalles del Pedido:</Text>
+        <FlatList
+          data={order.items}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <Text style={styles.itemText}>• {item.name}</Text>
+          )}
+          contentContainerStyle={{ paddingTop: 8 }}
+        />
+      </View>
     </View>
   );
 }
@@ -84,26 +101,63 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff5e1',
-    padding: 20,
-    paddingTop: 40,
+    paddingHorizontal: 20,
+    paddingTop: 50,
   },
-  title: {
-    fontSize: 24,
+  header: {
+    fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#333',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  status: {
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 15,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
+  },
+  statusText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '500',
+    marginBottom: 12,
+    color: '#555',
   },
-  item: {
+  statusValue: {
+    fontWeight: 'bold',
+    color: '#ff7f50',
+  },
+  itemsTitle: {
     fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+    color: '#333',
+  },
+  itemText: {
+    fontSize: 15,
+    color: '#555',
     marginBottom: 4,
+    paddingLeft: 6,
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff5e1',
+    paddingHorizontal: 20,
+  },
+  emptyImage: {
+    width: 120,
+    height: 120,
+    marginBottom: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#888',
+    textAlign: 'center',
   },
 });
