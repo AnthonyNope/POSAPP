@@ -6,6 +6,8 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { auth } from '../firebase/firebaseConfig';
 
+
+
 interface Product {
   id: string;
   name: string;
@@ -56,6 +58,10 @@ export default function CarritoScreen() {
 
   return (
     <View style={styles.container}>
+        <TouchableOpacity onPress={() => router.back()}>
+  <Text style={styles.backButton}>← Volver</Text>
+</TouchableOpacity>
+
       <Text style={styles.title}>🧾 Tu pedido</Text>
 
       <FlatList
@@ -81,6 +87,14 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 40,
   },
+
+  backButton: {
+    color: '#ff7f50',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  
   title: {
     fontSize: 24,
     fontWeight: 'bold',

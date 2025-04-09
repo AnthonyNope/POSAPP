@@ -65,40 +65,44 @@ export default function ClienteScreen() {
         contentContainerStyle={{ paddingBottom: 100 }} // extra espacio para la barra del carrito
       />
   
-  {cart.length > 0 && (
-  <View style={styles.cartBar}>
-    <View>
-      <Text style={styles.cartText}>
-        🛒 {cart.length} producto(s) en el carrito
-      </Text>
+      {cart.length > 0 && (
+        <View style={styles.cartBar}>
+          <Text style={styles.cartText}>
+            🛒 {cart.length} producto(s) en el carrito
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              router.push({
+                pathname: '/carrito',
+                params: {
+                  cart: JSON.stringify(cart),
+                },
+              });
+            }}
+          >
+            <Text style={styles.viewCartButton}>Ver pedido</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+  
+      {/* 👇 Este botón siempre visible, fuera del carrito */}
       <TouchableOpacity
-        onPress={() => {
-          router.push({
-            pathname: '/carrito',
-            params: {
-              cart: JSON.stringify(cart),
-            },
-          });
-        }}
-      >
-        <Text style={styles.viewCartButton}>Ver pedido</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() => router.push('/estado')}
-        style={{ marginTop: 4 }}
-      >
-        <Text style={[styles.viewCartButton, { color: '#32CD32' }]}>
-          Ver estado del pedido
-        </Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-)}
-
+  onPress={() => router.push('/estado')}
+  style={[
+    styles.addButton,
+    {
+      marginTop: 20,
+      backgroundColor: '#32CD32',
+      marginBottom: 40, // 👈 esto evita que se pegue abajo y tape cosas
+    },
+  ]}
+>
+  <Text style={styles.addButtonText}>Ver estado del pedido</Text>
+</TouchableOpacity>
 
     </View>
   );
+  
   
 
   
