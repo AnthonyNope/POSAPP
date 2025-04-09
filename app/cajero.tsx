@@ -1,6 +1,13 @@
 // app/cajero.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from 'react-native';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 
@@ -33,7 +40,7 @@ export default function CajeroScreen() {
       await updateDoc(doc(db, 'orders', orderId), {
         status: 'Paid',
       });
-      fetchOrders(); // recargar
+      fetchOrders();
     } catch (error) {
       console.error('Error al marcar como pagado:', error);
     }
@@ -45,29 +52,40 @@ export default function CajeroScreen() {
 
   const renderItem = ({ item }: { item: Order }) => (
     <View style={styles.card}>
-      <Text style={styles.orderTitle}>🧾 Pedido {item.id.slice(0, 5)}...</Text>
-      {item.items.map((product, index) => (
-        <Text key={index} style={styles.itemText}>• {product.name}</Text>
-      ))}
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => markAsPaid(item.id)}
-      >
-        <Text style={styles.buttonText}>Marcar como "Pagado"</Text>
+      <Text style={styles.orderTitle}>🧾 Pedido #{item.id.slice(0, 6)}</Text>
+      <View style={styles.itemsList}>
+        {item.items.map((product, index) => (
+          <Text key={index} style={styles.itemText}>• {product.name}</Text>
+        ))}
+      </View>
+      <TouchableOpacity style={styles.button} onPress={() => markAsPaid(item.id)}>
+        <Text style={styles.buttonText}>💸 Marcar como Pagado</Text>
       </TouchableOpacity>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>💰 Pedidos para cobrar</Text>
-      <FlatList
-        data={orders}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+      <Text style={styles.title}>💰 Pedidos listos para cobrar</Text>
+
+      {orders.length === 0 ? (
+        <View style={styles.centered}>
+          <Image
+            source={{
+              uri: 'https://cdn-icons-png.flaticon.com/512/4151/4151082.png',
+            }}
+            style={styles.emptyImage}
+          />
+          <Text style={styles.emptyText}>No hay pedidos listos por el momento</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={orders}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      )}
     </View>
   );
 }
@@ -76,38 +94,67 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff5e1',
-    padding: 20,
-    paddingTop: 40,
+    paddingHorizontal: 20,
+    paddingTop: 50,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
+    color: '#333',
     marginBottom: 20,
+    textAlign: 'center',
   },
   card: {
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    padding: 18,
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 5,
   },
   orderTitle: {
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#444',
+  },
+  itemsList: {
+    marginBottom: 12,
   },
   itemText: {
-    color: '#333',
+    fontSize: 15,
+    color: '#555',
+    marginBottom: 4,
+    paddingLeft: 6,
   },
   button: {
     backgroundColor: '#32CD32',
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 6,
+    paddingVertical: 10,
+    borderRadius: 10,
     alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
+  },
+  centered: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 60,
+  },
+  emptyImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#777',
+    textAlign: 'center',
   },
 });
