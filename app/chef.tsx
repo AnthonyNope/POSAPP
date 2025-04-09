@@ -25,8 +25,7 @@ export default function ChefScreen() {
       const pendingOrders = data.filter(
         (order) =>
           order.status === 'Ordered' ||
-          order.status === 'Cooking' ||
-          order.status === 'Ready for Pickup'
+          order.status === 'Cooking'
       );
       setOrders(pendingOrders);
     } catch (error) {
