@@ -7,6 +7,7 @@ import { TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 
 
+
 interface Product {
   id: string;
   name: string;
@@ -64,25 +65,37 @@ export default function ClienteScreen() {
         contentContainerStyle={{ paddingBottom: 100 }} // extra espacio para la barra del carrito
       />
   
-    {cart.length > 0 && (
-    <View style={styles.cartBar}>
-        <Text style={styles.cartText}>
+  {cart.length > 0 && (
+  <View style={styles.cartBar}>
+    <View>
+      <Text style={styles.cartText}>
         🛒 {cart.length} producto(s) en el carrito
-        </Text>
-        <TouchableOpacity
+      </Text>
+      <TouchableOpacity
         onPress={() => {
-            router.push({
+          router.push({
             pathname: '/carrito',
             params: {
-                cart: JSON.stringify(cart),
+              cart: JSON.stringify(cart),
             },
-            });
+          });
         }}
-        >
+      >
         <Text style={styles.viewCartButton}>Ver pedido</Text>
-        </TouchableOpacity>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => router.push('/estado')}
+        style={{ marginTop: 4 }}
+      >
+        <Text style={[styles.viewCartButton, { color: '#32CD32' }]}>
+          Ver estado del pedido
+        </Text>
+      </TouchableOpacity>
     </View>
-    )}
+  </View>
+)}
+
 
     </View>
   );

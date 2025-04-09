@@ -4,6 +4,7 @@ import { useLocalSearchParams, router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
+import { auth } from '../firebase/firebaseConfig';
 
 interface Product {
   id: string;
@@ -28,14 +29,18 @@ export default function CarritoScreen() {
 
   const handleEnviarPedido = async () => {
     try {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+  
       await addDoc(collection(db, 'orders'), {
         items: cart,
         status: 'Ordered',
         createdAt: serverTimestamp(),
+        userId: uid, // 👈 esto es lo nuevo
       });
-
+  
       Alert.alert('✅ Pedido enviado a la cocina');
-      router.replace('/cliente'); // volver al menú
+      router.replace('/cliente');
     } catch (error) {
       console.error('Error al enviar pedido:', error);
       Alert.alert('❌ Error', 'No se pudo enviar el pedido');
