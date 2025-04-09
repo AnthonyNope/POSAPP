@@ -1,8 +1,11 @@
 // app/estado.tsx
 import { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import { db, auth } from '../firebase/firebaseConfig';
+import { router } from 'expo-router';
+
+
 
 interface Order {
   id: string;
@@ -61,6 +64,11 @@ export default function EstadoScreen() {
 
   return (
     <View style={styles.container}>
+
+      <TouchableOpacity onPress={() => router.back()}>
+        <Text style={styles.backButton}>← Volver</Text>
+      </TouchableOpacity>
+      
       <Text style={styles.title}>📦 Estado del pedido</Text>
       <Text style={styles.status}>Estado: {order.status}</Text>
 
@@ -96,6 +104,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 4,
   },
+  backButton: {
+    color: '#ff7f50',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  
   centered: {
     flex: 1,
     justifyContent: 'center',
