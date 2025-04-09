@@ -18,8 +18,6 @@ import { auth } from '../firebase/firebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 
-
-
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,34 +28,32 @@ export default function LoginScreen() {
       if (isRegister) {
         const userCredential = await registerUser(email, password);
         const uid = userCredential.user.uid;
-      
+
         const userRef = doc(db, 'users', uid);
         await setDoc(userRef, {
           email,
-          role: 'cliente', // 👈 Por ahora asignamos siempre "cliente"
+          role: 'cliente',
         });
-      
+
         Alert.alert('✅ Registro exitoso como cliente');
-      }
-       else {
+      } else {
         await loginUser(email, password);
         const uid = auth.currentUser?.uid;
-  
+
         if (!uid) {
           Alert.alert('Error', 'No se pudo obtener el UID del usuario');
           return;
         }
-  
+
         const role = await getUserRole(uid);
-  
+
         if (!role) {
           Alert.alert('❌ Error', 'No se encontró el rol del usuario');
           return;
         }
-  
+
         Alert.alert('✅ Login exitoso', `Rol: ${role}`);
-  
-        // Redirección por rol
+
         if (role === 'cliente') {
           router.replace('/cliente');
         } else if (role === 'chef') {
@@ -78,7 +74,7 @@ export default function LoginScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.innerContainer}>
+      <View style={styles.card}>
         <Image
           source={{
             uri: 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png',
@@ -95,8 +91,9 @@ export default function LoginScreen() {
           value={email}
           onChangeText={setEmail}
           style={styles.input}
-          placeholderTextColor="#999"
+          placeholderTextColor="#aaa"
           autoCapitalize="none"
+          keyboardType="email-address"
         />
         <TextInput
           placeholder="Contraseña"
@@ -104,7 +101,7 @@ export default function LoginScreen() {
           onChangeText={setPassword}
           secureTextEntry
           style={styles.input}
-          placeholderTextColor="#999"
+          placeholderTextColor="#aaa"
         />
 
         <TouchableOpacity style={styles.button} onPress={handleAuth}>
@@ -128,45 +125,64 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff5e1',
+    backgroundColor: '#fff4ec',
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  innerContainer: {
+  card: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
     padding: 30,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 10,
+    elevation: 10,
     alignItems: 'center',
   },
   logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 25,
+    width: 90,
+    height: 90,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginBottom: 6,
+    fontSize: 24,
+    fontWeight: '700',
     color: '#333',
+    marginBottom: 4,
   },
   subtitle: {
-    fontSize: 16,
-    marginBottom: 30,
-    color: '#555',
+    fontSize: 15,
+    color: '#777',
+    marginBottom: 25,
   },
   input: {
     width: '100%',
-    borderWidth: 1,
+    backgroundColor: '#f8f8f8',
     borderColor: '#ddd',
-    borderRadius: 10,
-    padding: 12,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     marginBottom: 15,
-    backgroundColor: '#fff',
+    fontSize: 16,
+    color: '#333',
   },
   button: {
-    backgroundColor: '#ff7f50',
-    padding: 15,
-    borderRadius: 10,
     width: '100%',
+    backgroundColor: '#ff7f50',
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 10,
+    shadowColor: '#ff7f50',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 6,
+    elevation: 5,
   },
   buttonText: {
     color: '#fff',
@@ -177,5 +193,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: '#ff7f50',
     fontWeight: '500',
+    fontSize: 14,
   },
 });
